@@ -17,10 +17,10 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [x] [M] Loop unit tests against a hand-built fake `ModelClient` (scripted responses — proves the seam before cassettes exist)
 
 ## Phase 2 — Record/replay (Day 2, morning) ✦ gate: full suite green with API key unset
-- [ ] [M] Fingerprint function (canonical JSON, sorted keys) — property-style unit tests (stability, sensitivity to each component)
-- [ ] [M] Cassette format + `RecordingClient` / `ReplayClient`; loud, diff-friendly miss errors
-- [ ] [M] `npm run record` CLI; record the happy-path scenario; commit cassettes
-- [ ] [M] Agent tests migrated to replay mode; CI proves offline (no secret configured in Actions)
+- [x] [M] Fingerprint function (canonical JSON, sorted keys) — property-style unit tests (stability, sensitivity to each component)
+- [x] [M] Cassette format + `RecordingClient` / `ReplayClient`; loud, diff-friendly miss errors
+- [x] [M] `npm run record` CLI; record the happy-path scenario; commit cassettes
+- [x] [M] Agent tests migrated to replay mode; CI proves offline (no secret configured in Actions)
 - [ ] [S] Record-mode "append vs overwrite" ergonomics
 
 ## Phase 3 — Guardrails + eval suite (Day 2) ✦ gate: over-limit scenario blocked AND recovered-by-escalation, asserted in a test

@@ -9,7 +9,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "demo": "tsx src/scripts/demo.ts",
-    "record": "echo 'record: implemented in Phase 2' >&2; exit 1",
+    "record": "tsx src/scripts/record.ts",
     "eval": "echo 'eval: implemented in Phase 3' >&2; exit 1"
   },
   "dependencies": {

@@ -1,0 +1,171 @@
+{
+  "scenario": "happy-path-refund",
+  "entries": [
+    {
+      "fingerprint": "22f00dd73f4be45cd90fa61775b338b3f47e80caa4338241c2bc8832bb531326",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 1,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "Hi, please refund my payment pay_001 in full — the order was cancelled."
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFUGVjgnszjAUce8GzN3",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I'll look up that payment first to verify the details, then process the refund for you."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01HGoYa5D2HuJtdRPJBGd9bx",
+            "name": "lookup_payment",
+            "input": {
+              "payment_id": "pay_001"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1159,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 78,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "6a966107eacd6850c4bc981122185127c31c10e104f26c9b3b64c7684c553659",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 3,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "[{\"content\":\"{\\\"found\\\":true,\\\"payment\\\":{\\\"id\\\":\\\"pay_001\\\",\\\"status\\\":\\\"captured\\\",\\\"amount\\\":4250,\\\"currency\\\":\\\"EUR\\\",\\\"method\\\":\\\"card\\\",\\\"customerEmail\\\":…"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFUGbsXje2VMEUtXWRGZ",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Perfect! I found your payment of €42.50. Since the order was cancelled, I'll refund the full amount now."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01Kfei4cLw9iNVwYz8Eo23Af",
+            "name": "issue_refund",
+            "input": {
+              "payment_id": "pay_001",
+              "amount": 4250,
+              "reason": "Order cancelled"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1289,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 122,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "8043b08bd3ae711ecf5fc27384c6c1eaa2cf452003f702e1a6be6675f37ea1e9",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 5,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "[{\"content\":\"{\\\"ok\\\":true,\\\"refund\\\":{\\\"id\\\":\\\"re_1\\\",\\\"paymentId\\\":\\\"pay_001\\\",\\\"amount\\\":4250,\\\"currency\\\":\\\"EUR\\\",\\\"reason\\\":\\\"Order cancelled\\\"}}\",\"tool_use…"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFUGkiqNyfnGEipVAYx9",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Excellent! Your refund has been processed successfully."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01GidX194u82aKpcVzpU3V7s",
+            "name": "resolve",
+            "input": {
+              "action": "refunded",
+              "message": "Your payment of €42.50 (pay_001) has been fully refunded due to order cancellation. The refund (re_1) has been processed and should appear in your account within 1-2 business days.",
+              "references": [
+                "pay_001",
+                "re_1"
+              ]
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1460,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 155,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    }
+  ]
+}

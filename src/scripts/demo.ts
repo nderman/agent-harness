@@ -3,14 +3,9 @@ import { LiveClient } from '../harness/model-client/live-client';
 import { CollectingTracer } from '../harness/trace/tracer';
 import { createPaymentsDb } from '../agent/payments-db';
 import { runAgent } from '../agent/loop';
+import { HAPPY_PATH_REFUND } from '../agent/scenarios';
 import { DOMAIN_TOOLS } from '../agent/tools';
-
-// Load .env for local runs; an already-exported ANTHROPIC_API_KEY still works.
-try {
-  process.loadEnvFile('.env');
-} catch {
-  // no .env file — rely on the ambient environment
-}
+import { requireApiKey } from './env';
 
 /**
  * One live scenario end-to-end against the real model (Phase 1 gate). This is
@@ -18,18 +13,14 @@ try {
  * fake client (and, from Phase 2, cassettes).
  */
 async function main(): Promise<void> {
-  const apiKey = process.env['ANTHROPIC_API_KEY'];
-  if (!apiKey) {
-    console.error('demo: set ANTHROPIC_API_KEY to run the live demo.');
-    process.exit(1);
-  }
+  const apiKey = requireApiKey('demo');
 
   const ids = new SequentialIdGenerator();
   const db = createPaymentsDb(ids);
   const tracer = new CollectingTracer();
   const client = new LiveClient({ apiKey, clock: new SystemClock(), tracer });
 
-  const input = 'Hi, please refund my payment pay_001 in full — the order was cancelled.';
+  const input = HAPPY_PATH_REFUND.input;
   console.log(`\n> customer: ${input}\n`);
 
   const outcome = await runAgent({ client, input, tools: DOMAIN_TOOLS, ctx: { db, ids }, tracer });
