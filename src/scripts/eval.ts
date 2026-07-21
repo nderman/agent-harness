@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { diffBaseline, type Baseline } from '../harness/report/baseline';
-import { renderMarkdown } from '../harness/report/render';
+import { renderHtml, renderMarkdown } from '../harness/report/render';
 import { runSuite, toBaseline } from '../harness/report/run-suite';
 import { writeTrace } from '../harness/trace/jsonl';
 
@@ -29,6 +29,7 @@ async function main(): Promise<void> {
   mkdirSync(REPORT_DIR, { recursive: true });
   const markdown = renderMarkdown(reports, diff);
   writeFileSync(`${REPORT_DIR}/eval-report.md`, markdown);
+  writeFileSync(`${REPORT_DIR}/index.html`, renderHtml(reports, diff));
   console.log(markdown);
 
   if (update) {

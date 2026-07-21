@@ -14,6 +14,10 @@ The agent here (a payments-support agent with three tools) is intentionally smal
 4. **Observability** — a structured trace per run: every model call, tool call, guardrail decision, token count, cost, and latency — rendered into a human-readable report.
 5. **Regression detection** — eval results diff against a committed baseline; drift fails the build.
 
+### Drift detection, proven
+
+A one-word change to the system prompt — nothing else — turns CI red: [**demo run 29863916603**](https://github.com/nderman/agent-harness/actions/runs/29863916603) fails with `Replay miss on cassette … no recorded response matches this request` on *every* scenario, each naming the exact prompt digest that changed and telling you to re-record. Strict fingerprint matching turns silent behavioural drift into an ordinary red build. (Branch [`demo/prompt-regression`](https://github.com/nderman/agent-harness/compare/main...demo/prompt-regression) — intentionally not merged.)
+
 ## Why this is the interesting problem
 
 Agents are nondeterministic programs that take actions. Ordinary testing assumes determinism; ordinary monitoring assumes request/response. Neither survives contact with an agent. The three questions this repo answers are the three questions any team shipping agents must answer:
