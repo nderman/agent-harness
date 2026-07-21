@@ -1,0 +1,28 @@
+{
+  "name": "agent-harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A test & eval harness that makes an AI agent deterministic, testable, and observable",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "demo": "echo 'demo: implemented in Phase 1' >&2; exit 1",
+    "record": "echo 'record: implemented in Phase 2' >&2; exit 1",
+    "eval": "echo 'eval: implemented in Phase 3' >&2; exit 1"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

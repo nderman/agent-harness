@@ -4,10 +4,10 @@ Legend: **[M]** must-have · **[S]** stretch (cut cleanly if time pressure hits)
 Cut order if behind: HTML report → semantic-judge polish → regression thresholds (keep simple pass/fail diff) → extra eval scenarios (keep the core five).
 
 ## Phase 0 — Scaffold (Day 1, morning) ✦ gate: `npm test` green in CI
-- [ ] [M] `npm init`, TypeScript strict + ESM, vitest, tsx; deps: `@anthropic-ai/sdk`, `zod`
-- [ ] [M] `npm test` / `typecheck` / placeholder scripts wired; one trivial passing test
-- [ ] [M] GitHub repo (public), Actions workflow: typecheck + test on push — green from the first push
-- [ ] [M] `src/harness/determinism.ts` (injected clock + ID gen) — exists before anything can cheat
+- [x] [M] `npm init`, TypeScript strict + ESM, vitest, tsx; deps: `@anthropic-ai/sdk`, `zod`
+- [x] [M] `npm test` / `typecheck` / placeholder scripts wired; one trivial passing test
+- [x] [M] GitHub repo (public), Actions workflow: typecheck + test on push — green from the first push
+- [x] [M] `src/harness/determinism.ts` (injected clock + ID gen) — exists before anything can cheat
 
 ## Phase 1 — Agent + tools (Day 1) ✦ gate: `npm run demo` completes a live happy-path refund
 - [ ] [M] Fixture payments DB + the three tools (`lookup_payment`, `issue_refund`, `escalate`) with zod schemas — unit-tested directly
