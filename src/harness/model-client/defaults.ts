@@ -5,7 +5,6 @@
  */
 export const DEFAULTS = {
   agentModel: 'claude-haiku-4-5',
-  judgeModel: 'claude-opus-4-8',
   maxTokens: 4096,
   timeoutMs: 60_000,
   /** Transport retries — handled by the SDK (see DESIGN Decision 8). */

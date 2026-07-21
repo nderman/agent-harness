@@ -114,7 +114,6 @@ The final `Resolution` is obtained by giving the agent a `resolve` tool with the
 | Setting | Default | Rationale |
 |---|---|---|
 | Agent model | `claude-haiku-4-5` | Cheap, fast; replay makes live calls rare (SPEC.md) |
-| Judge model | `claude-opus-4-8` | Strongest judge; recorded once, replayed forever (Decision 5) |
 | `max_tokens` | 4096 | Generous for short tool-call turns; truncation is a run-failure, not a retry (taxonomy above) |
 | `max_retries` (transport) | 3 | SDK-level, exponential backoff |
 | Request timeout | 60 s | Well above Haiku latency; fail fast beats hanging CI |
