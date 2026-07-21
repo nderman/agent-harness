@@ -23,33 +23,35 @@ import { requireApiKey } from './env';
 async function main(): Promise<void> {
   const apiKey = requireApiKey('canary');
   const model = process.argv[2] ?? DEFAULTS.agentModel;
-  console.log(`drift canary: ${SCENARIOS.length} scenarios vs ${model} (live)\n`);
+  const runs = Math.max(1, Number(process.argv[3] ?? '1'));
+  console.log(`drift canary: ${SCENARIOS.length} scenarios × ${runs} run(s) vs ${model} (live)\n`);
 
-  let failed = 0;
+  let drifted = 0;
   for (const scenario of SCENARIOS) {
-    const tracer = new CollectingTracer();
-    const client = new LiveClient({ apiKey, clock: new SystemClock(), tracer });
-    const outcome = await runAgent({
-      client,
-      input: scenario.input,
-      tools: DOMAIN_TOOLS,
-      ctx: createRunContext(),
-      tracer,
-      config: { agentModel: model },
-    });
-    const result = assertScenario(scenario, outcome, tracer);
-    if (result.pass) {
-      console.log(`  ✓ ${scenario.name}`);
+    // Sample N runs — LLMs aren't bit-deterministic, so an intermittent
+    // divergence only shows up if you look more than once.
+    let held = 0;
+    const failures = new Set<string>();
+    for (let i = 0; i < runs; i++) {
+      const tracer = new CollectingTracer();
+      const client = new LiveClient({ apiKey, clock: new SystemClock(), tracer });
+      const outcome = await runAgent({ client, input: scenario.input, tools: DOMAIN_TOOLS, ctx: createRunContext(), tracer, config: { agentModel: model } });
+      const result = assertScenario(scenario, outcome, tracer);
+      if (result.pass) held += 1;
+      else for (const f of result.failures) failures.add(f);
+    }
+    if (held === runs) {
+      console.log(`  ✓ ${scenario.name} (${held}/${runs} held)`);
     } else {
-      failed++;
-      console.log(`  ✗ ${scenario.name}`);
-      for (const f of result.failures) console.log(`      - ${f}`);
+      drifted += 1;
+      console.log(`  ✗ ${scenario.name} (${held}/${runs} held)`);
+      for (const f of failures) console.log(`      - ${f}`);
     }
   }
 
-  console.log(`\n${SCENARIOS.length - failed}/${SCENARIOS.length} scenarios held their baseline against ${model}.`);
-  if (failed > 0) {
-    console.error(`drift canary: ${failed} scenario(s) drifted — the live model no longer matches the recorded baseline.`);
+  console.log(`\n${SCENARIOS.length - drifted}/${SCENARIOS.length} scenarios held their baseline against ${model}.`);
+  if (drifted > 0) {
+    console.error(`drift canary: ${drifted} scenario(s) drifted — the live model no longer matches the recorded baseline.`);
     process.exit(1);
   }
 }

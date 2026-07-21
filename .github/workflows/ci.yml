@@ -17,3 +17,6 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # Offline eval: replays every scenario and diffs behaviour against the
+      # committed baseline. A regression (or a stale cassette) exits non-zero.
+      - run: npm run eval

@@ -5,5 +5,6 @@ coverage/
 .env.*
 *.log
 .DS_Store
-# Traces from local runs are ephemeral; cassettes and baselines ARE committed
+# Generated eval report + traces are ephemeral; cassettes and baselines ARE committed
+/report/
 traces/local/

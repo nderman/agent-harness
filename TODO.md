@@ -33,9 +33,9 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [ ] [S] Additional scenarios (double-refund attempt, wrong-customer lookup)
 
 ## Phase 4 — Trace, report, regression, hosted link (Day 3, morning) ✦ gate: red CI from a deliberately broken prompt; live report URL
-- [ ] [M] Typed trace events + JSONL writer threaded through loop/guardrails/client; cost table for haiku/opus
-- [ ] [M] Markdown report: per-run narrative + eval summary (pass/fail, scores, cost, latency)
-- [ ] [M] `evals/baseline.json` + diff in eval runner; regression → nonzero exit; wire into CI
+- [x] [M] Typed trace events + JSONL writer threaded through loop/guardrails/client; cost table for haiku/opus
+- [x] [M] Markdown report: per-run summary + safety metric (blocked vs slipped) + per-scenario trajectory/action/cost
+- [x] [M] `evals/baseline.json` + diff in eval runner; regression → nonzero exit; wired into CI (`npm run eval`)
 - [ ] [M] Demonstrate detection: break the prompt on a branch, capture the red run, revert (screenshot/link goes in README)
 - [ ] [M] Hosted link: static site (Vercel) serving the eval report + one browsable trace
 - [ ] [S] HTML report styling / trace viewer niceties
