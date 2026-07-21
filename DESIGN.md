@@ -21,15 +21,16 @@ flowchart LR
     mc -- replay --> cas[("Cassette<br/>(no network)")]
 ```
 
-Five modules under `src/`:
+The modules under `src/` (as built):
 
 | Module | Responsibility |
 |---|---|
-| `agent/` | System prompt, tool definitions, the agentic loop, output schema |
-| `harness/model-client/` | The `ModelClient` interface + `LiveClient`, `RecordingClient`, `ReplayClient` |
-| `harness/guardrails/` | Schema validation + policy checks, invoked by the loop, never by the model |
-| `harness/trace/` | Typed event emitter, JSONL writer, cost/latency accounting |
-| `harness/eval/` | Scenario loader, trajectory + output assertions, LLM judge, baseline diff, report |
+| `agent/` | System prompt, tools + Gate-1 schemas + Gate-2 refund policy, the agentic loop, output schema, scenarios, fixture DB |
+| `harness/model-client/` | The `ModelClient` seam + `LiveClient`, the error taxonomy (`classify`), defaults, fake client for tests |
+| `harness/cassette/` | Fingerprint + `RecordingClient` / `ReplayClient` + the cassette store |
+| `harness/trace/` | Typed event union, JSONL writer, cost table |
+| `harness/eval/` | Scenario runner, trajectory + faithfulness assertions, shared trajectory helpers |
+| `harness/report/` | Metrics, markdown + HTML report, baseline regression diff |
 
 Dependency direction: the **agent depends on the harness's interfaces** (`ModelClient`, `Tracer`), never the reverse. The harness can wrap any agent that speaks those interfaces — that's the "this generalizes" claim, demonstrated by construction rather than by a plugin system.
 
@@ -132,3 +133,15 @@ Two axes are out of scope here because the *agent* is, not because the harness c
 - **Perception / extraction eval.** A large class of agent unreliability is "did the model read the input correctly" — documents/OCR/messy text → structured data — which is a distinct axis from reasoning, and is best tested with synthetic inputs of escalating messiness. This agent takes clean structured inputs, so there's nothing to extract. But the scenario → assertion → cassette machinery generalizes to it unchanged: an extraction scenario just asserts on the parsed fields instead of the tool trajectory.
 - **Tolerance / format-normalized assertions.** Amounts here are integer minor units *by design*, so the classic `500` vs `"500.00"` vs `"€500"` ambiguity can't arise — Gate 1's `z.number().int()` rejects the alternatives at the boundary. An agent that accepted free-form amounts would need tolerance/normalized comparison, which the argument-predicate API already supports (a predicate can normalize before comparing) — the seam is there; this agent just doesn't need it.
 - **N-run canary sampling.** LLMs aren't bit-deterministic, so a single live canary run can miss an intermittent divergence. The canary takes an optional run count (`npm run canary <model> <runs>`) and samples, flagging a scenario that doesn't hold across all runs — the honest way to catch flapping behaviour rather than pretending one live run is a verdict.
+
+---
+
+## Built vs designed (reconciliation)
+
+Every decision above shipped as written, with three noted refinements — recorded here so the design reads as honest, not retrofitted:
+
+- **Decision 5 (no LLM judge) changed mid-build.** The original plan had a recorded Opus judge for fuzzy output quality; it was dropped for deterministic faithfulness checks (rationale in the decision itself). The one deliberate design→implementation reversal.
+- **Decision 4 (guardrail placement) was sharpened.** To run Gate 2 *in the loop* between the model's proposal and execution, the tool interface split into `parse` (Gate 1, schema) / `run` / optional `policy` (Gate 2). The decision held; the mechanism got cleaner, and each gate became separately traceable.
+- **Regression detection (Decision 6) grew a live arm.** The offline suite is frozen by design, so it can't see the *model* drift underneath us. A live drift canary re-runs the scenarios against the live model with N-run sampling and diffs the trajectory against the recorded baseline — added after a gap-analysis against prior eval work.
+
+Everything else — the `ModelClient` seam, strict fingerprint matching, the hand-rolled loop, the retry/re-prompt error taxonomy, tool-forced structured output, and event-sourced traces → derived reports — shipped as designed. Two review agents (Phase 3, Phase 4) each caught a correctness bug the passing tests missed; both fixes shipped with a regression test in the same commit. That the harness's own construction was caught by adversarial review is, itself, the thesis.

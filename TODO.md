@@ -41,8 +41,8 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [x] [S] HTML report styling (theme-aware stat tiles + table) / trace links
 
 ## Phase 5 — Docs + polish (Day 3) ✦ gate: SUBMISSION.md fully ticked
-- [ ] [M] README "how I used AI" section written honestly (process, what the agent got wrong, where judgment was load-bearing)
-- [ ] [M] Reconcile DESIGN.md decisions against what was actually built; note divergences
-- [ ] [M] Fresh-clone test: clean machine → `npm install && npm test` green, README quickstart accurate
-- [ ] [M] Final pass on SUBMISSION.md checklist
-- [ ] [S] Short demo GIF/recording of `npm run demo` + report
+- [x] [M] README "how I used AI" section written honestly (process, what the agent got wrong, where judgment was load-bearing)
+- [x] [M] Reconcile DESIGN.md decisions against what was actually built; note divergences (module table + "built vs designed" section)
+- [x] [M] Fresh-clone test: clean machine → `npm install && npm test` green (100 tests + eval, no key); README quickstart accurate
+- [x] [M] Final pass on SUBMISSION.md checklist (all required items ticked)
+- [ ] [S] Short demo GIF/recording of `npm run demo` + report — cut (hosted report + red-CI run cover it)
