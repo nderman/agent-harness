@@ -43,6 +43,7 @@ npm run record    # re-record cassettes after an intentional prompt/tool change
 | `GUARDRAILS.md` | The safety/validation model |
 | `AGENTS.md` | How an AI coding agent works in this repo (also a work sample — see below) |
 | `TODO.md` | Phased plan with must-have vs stretch cut lines |
+| `NOTES.md` | Running per-phase development log (the raw "how I used AI" record) |
 | `SUBMISSION.md` | Deliverables checklist mapped to the brief |
 | `src/agent/` | The agent under test: loop, tools, prompts |
 | `src/harness/` | Record/replay, eval runner, guardrails, tracing, report |
@@ -51,9 +52,10 @@ npm run record    # re-record cassettes after an intentional prompt/tool change
 
 ## How I used AI to build this
 
-*(Filled in as the build progresses — this section is a first-class deliverable. For a harness role, how I engineer WITH agents is half the signal.)*
+A first-class deliverable — for a harness role, how I engineer *with* agents is half the signal. This is the curated version; `NOTES.md` is the running per-phase log it draws from.
 
 - **Tooling:** Claude Code as the primary development agent; this repo's `AGENTS.md` is the operating manual I wrote for it. `.claude/skills/shipit/` is a real skill from my daily workflow — a review → test-coverage → simplify → document → commit pipeline the agent runs before every push in this repo (included both as working tooling and as a process sample).
-- **Process:** plan → sign-off → test-first implementation in phases (see `TODO.md`); the agent writes code and tests together, CI green from Phase 0.
+- **Process:** plan → sign-off → test-first implementation in phases (see `TODO.md`); the agent writes code and tests together, CI green from Phase 0. Each phase has a hard gate, and the offline invariant is enforced by CI (no API key configured), not asserted.
+- **What the process caught — the point, demonstrated on itself:** during Phase 1, the shipit pipeline's parallel review agents flagged a real bug my green unit tests had missed — a shared re-prompt counter that mis-attributed *why* a run failed. The fix and a regression test that fails on the old design shipped in the same commit. Automated adversarial review catching what tests didn't, on the harness's own construction, is exactly what this repo argues for. (Two smaller review catches the same round: a re-prompt that dropped an error's field path, and a trace event that swallowed its failure message.)
+- **The tooling improved itself:** the `shipit` skill's first real run here surfaced its own gaps (an untracked-file blind spot, no re-run-after-fix rule, no secrets scan); I patched the skill and shipped the fix in the same commit.
 - **Meta:** the repo is itself an artifact of agentic engineering — an AI agent, working inside a harness of conventions and tests, building a harness for AI agents.
-- *(To add: what the agent got wrong and how the process caught it; prompts/sessions worth showing; where human judgment was load-bearing.)*

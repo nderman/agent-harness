@@ -16,6 +16,7 @@ Their brief → what maps to it → status. Nothing ships until every [ ] under 
 
 ### 3. "Documentation of tools/process/framework used"
 - [ ] README "How I used AI to build this" — Claude Code workflow, honest wins/misses
+- [ ] `NOTES.md` — running per-phase dev log (raw record behind the README narrative)
 - [ ] `AGENTS.md` — the operating manual itself is process documentation (call this out explicitly)
 - [ ] `TODO.md` left in place with real ticks — shows the plan and the cuts, which the brief rewards ("clarity of thought")
 - [ ] Tools list: Claude Code, Anthropic SDK, TypeScript/vitest/zod, Vercel, GitHub Actions
