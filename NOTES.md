@@ -2,6 +2,13 @@
 
 An honest, running record of building this repo *with* an AI coding agent (Claude Code). The curated version is the README's "How I used AI to build this" section; this is the raw chronology it draws from. Newest phase last.
 
+## Where the human stayed in the loop
+The agent did the building; these were mine to decide, and a couple were course-corrections it would not have made on its own:
+- **The core bet** — build a *harness*, not an app. The brief said "build something using AI"; I read the role and inverted it. That framing is the submission.
+- **Caught an architectural gap** — the first design under-specified failure handling. I pushed for a first-principles error taxonomy (retry at the transport vs re-prompt at the model vs fail fast), one centralized model wrapper, and sensible defaults in a single place. That became DESIGN Decision 8 and `defaults.ts`.
+- **Conventions I set** — diagrams are mermaid, promoted to a standing rule in `AGENTS.md`; and the provider stays Anthropic-native rather than routing through a third-party credit broker, to keep the artifact coherent with its own thesis (multi-provider is a documented non-goal, not a gap — the `ModelClient` seam makes it a drop-in later).
+- **Process discipline** — every phase runs to a hard gate and stops for review; I never let the agent run ahead across phases. That includes shipping the `shipit` skill in-repo as an exhibit and greenlighting its self-improvements.
+
 ## Planning — before any code
 - Wrote `SPEC` / `DESIGN` / `GUARDRAILS` / `AGENTS` / `TODO` / `SUBMISSION` first and got sign-off before writing feature code, so the design (8 decisions, trade-offs stated) was reviewable on its own.
 - `AGENTS.md` is the operating manual the coding agent follows every phase — test-first, offline-by-default, determinism injected, scope discipline. It is both a control on the agent and a work sample for the role.
