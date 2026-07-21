@@ -2,6 +2,8 @@
 
 **A test & evaluation harness that makes an AI agent deterministic, testable, and observable — demonstrated on a small payments-support agent.**
 
+📊 **Live eval report → https://nderman.github.io/agent-harness/** — regenerated and deployed by CI from committed cassettes on every push (zero live API calls); each scenario links to its JSONL trace.
+
 ## The thesis
 
 The take-home brief says *"build something using AI."* The role is about making AI agents **reliable, testable, and production-ready**. So this repo deliberately does not ship another chatbot-with-an-API-key. It ships the thing that's actually hard and actually the job: a **harness** — the machinery that lets you trust an agent enough to put it in production.

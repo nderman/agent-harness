@@ -11,8 +11,8 @@ Their brief → what maps to it → status. Nothing ships until every [ ] under 
 - [ ] Committed cassettes + baseline so the reviewer can run everything without secrets
 
 ### 2. "A hosted link"
-- [ ] Static eval report + sample trace deployed (Vercel), linked from README top
-- [ ] Link opens to something self-explanatory in <10 seconds (title + one-line thesis on the page itself)
+- [x] Eval report + browsable traces on GitHub Pages (nderman.github.io/agent-harness), deployed by CI, linked from README top
+- [x] Link opens to something self-explanatory in <10 seconds (title + one-line context on the page itself)
 
 ### 3. "Documentation of tools/process/framework used"
 - [ ] README "How I used AI to build this" — Claude Code workflow, honest wins/misses

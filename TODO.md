@@ -36,9 +36,9 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [x] [M] Typed trace events + JSONL writer threaded through loop/guardrails/client; cost table for haiku/opus
 - [x] [M] Markdown report: per-run summary + safety metric (blocked vs slipped) + per-scenario trajectory/action/cost
 - [x] [M] `evals/baseline.json` + diff in eval runner; regression → nonzero exit; wired into CI (`npm run eval`)
-- [ ] [M] Demonstrate detection: break the prompt on a branch, capture the red run, revert (screenshot/link goes in README)
-- [ ] [M] Hosted link: static site (Vercel) serving the eval report + one browsable trace
-- [ ] [S] HTML report styling / trace viewer niceties
+- [x] [M] Demonstrate detection: broke the prompt on `demo/prompt-regression` → red CI (run 29863916603), linked in README
+- [x] [M] Hosted link: GitHub Pages (nderman.github.io/agent-harness) serving the eval report + browsable JSONL traces, deployed by CI
+- [x] [S] HTML report styling (theme-aware stat tiles + table) / trace links
 
 ## Phase 5 — Docs + polish (Day 3) ✦ gate: SUBMISSION.md fully ticked
 - [ ] [M] README "how I used AI" section written honestly (process, what the agent got wrong, where judgment was load-bearing)
