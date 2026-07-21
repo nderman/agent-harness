@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "demo": "tsx src/scripts/demo.ts",
     "record": "tsx src/scripts/record.ts",
+    "canary": "tsx src/scripts/canary.ts",
     "eval": "echo 'eval: implemented in Phase 3' >&2; exit 1"
   },
   "dependencies": {

@@ -5,6 +5,7 @@ import { runAgent, type AgentOutcome } from '../../agent/loop';
 import { RESOLVE_TOOL_NAME } from '../../agent/resolution';
 import type { Scenario } from '../../agent/scenarios';
 import { DOMAIN_TOOLS, createRunContext, type ToolContext } from '../../agent/tools';
+import { checkFaithfulness } from './faithfulness';
 
 export interface EvalResult {
   scenario: string;
@@ -28,18 +29,17 @@ export async function replayScenario(scenario: Scenario): Promise<{ outcome: Age
 }
 
 /**
- * Assert on the trajectory — tool sequence and guardrail outcomes — plus the
- * final action. Trajectory assertions come first (DESIGN Decision 5): correctness
- * lives in what the agent did, not only in what it said.
+ * The assertions, over a completed run — trajectory (what the agent did) first,
+ * then final action, then deterministic faithfulness of the message. Pure over
+ * the outcome + trace, so it runs identically whether the run came from a
+ * cassette (offline eval) or the live model (drift canary).
  */
-export async function runEval(scenario: Scenario): Promise<EvalResult> {
-  const { outcome, tracer } = await replayScenario(scenario);
-  const { expect } = scenario;
-
+export function assertScenario(scenario: Scenario, outcome: AgentOutcome, tracer: CollectingTracer): EvalResult {
   if (!outcome.ok) {
     return { scenario: scenario.name, pass: false, failures: [`run failed: ${outcome.reason} (${outcome.detail})`] };
   }
 
+  const { expect } = scenario;
   const failures: string[] = [];
 
   // The *attempted* trajectory: a denied or schema-invalid call (ok:false) still
@@ -62,5 +62,13 @@ export async function runEval(scenario: Scenario): Promise<EvalResult> {
     failures.push(`references predicate failed: got [${outcome.resolution.references.join(', ')}]`);
   }
 
+  failures.push(...checkFaithfulness(outcome.resolution, tracer));
+
   return { scenario: scenario.name, pass: failures.length === 0, failures };
+}
+
+/** Run a scenario offline against its cassette and assert (DESIGN Decision 5). */
+export async function runEval(scenario: Scenario): Promise<EvalResult> {
+  const { outcome, tracer } = await replayScenario(scenario);
+  return assertScenario(scenario, outcome, tracer);
 }

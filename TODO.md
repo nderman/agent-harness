@@ -28,8 +28,8 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [x] [M] Guardrail wiring in loop: deny → structured tool error → trace event
 - [x] [M] Scenario format + eval runner; trajectory assertions (sequence, argument predicates, guardrail outcomes)
 - [x] [M] Five core scenarios recorded: happy refund · lookup-only · over-limit block · ambiguous→escalate · prompt-injection
-- [ ] [M] ~~LLM judge~~ → **deterministic faithfulness checks** in the eval runner (message consistent with action/trace). Judge dropped — DESIGN Decision 5.
-- [ ] [M] Live drift canary — re-run scenarios against the live model, diff trajectory vs baseline; prove it by forcing a model swap
+- [x] [M] ~~LLM judge~~ → **deterministic faithfulness checks** in the eval runner (message consistent with action/trace). Judge dropped — DESIGN Decision 5.
+- [x] [M] Live drift canary (`npm run canary [model]`) — re-runs scenarios against the live model, diffs trajectory + faithfulness vs baseline. Caught a real Haiku divergence; Opus 4.8 held all five.
 - [ ] [S] Additional scenarios (double-refund attempt, wrong-customer lookup)
 
 ## Phase 4 — Trace, report, regression, hosted link (Day 3, morning) ✦ gate: red CI from a deliberately broken prompt; live report URL
