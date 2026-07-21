@@ -1,0 +1,221 @@
+{
+  "scenario": "over-limit-refund",
+  "entries": [
+    {
+      "fingerprint": "f5e42e078cd71b92ebefa04a36dd590677ab1a7b08352b9921ec1d123783b6ca",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 1,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "Please refund payment pay_002 in full — the whole order fell through."
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYodPPfddDchdAfknXX",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I'll look up payment pay_002 first to verify the amount, then process the full refund."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01JJt2e6kFFxzMnNSgWhHvqR",
+            "name": "lookup_payment",
+            "input": {
+              "payment_id": "pay_002"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1157,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 80,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "773f26106da01fe64449c44b67b0691fbcb4e1c7fce2ee8742a212cfe72dfe21",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 3,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "[{\"content\":\"{\\\"found\\\":true,\\\"payment\\\":{\\\"id\\\":\\\"pay_002\\\",\\\"status\\\":\\\"captured\\\",\\\"amount\\\":120000,\\\"currency\\\":\\\"EUR\\\",\\\"method\\\":\\\"card\\\",\\\"customerEmail\\…"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYojhQ8CG29bShCBS5o",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Perfect! I found the payment. It's a captured payment for €1,200.00 (120,000 cents). I'll now process the full refund."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01Y8Lqknv3Xsvvhjxuowt99N",
+            "name": "issue_refund",
+            "input": {
+              "payment_id": "pay_002",
+              "amount": 120000,
+              "reason": "Order fell through"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1289,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 132,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "ffb3cf94e3e4512c84cc73ab7779826ebcf7473a3764d57af27bc64a5d9947c3",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 5,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "[{\"content\":\"refund 120000 exceeds the 50000 auto-approval ceiling — escalate for manual approval\",\"is_error\":true,\"tool_use_id\":\"toolu_01Y8Lqknv3Xsvvhjxuowt99N…"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYou7wTgauP1d69Eboe",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "The full refund amount exceeds the auto-approval limit. I need to escalate this for manual approval."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01Cq7ZfUbqRmVbnQGGjAtz57",
+            "name": "escalate",
+            "input": {
+              "reason": "Full refund of €1,200.00 (120,000 cents) for payment pay_002 requested due to order falling through. Refund amount exceeds auto-approval ceiling of 50,000 cents and requires manual approval.",
+              "priority": "normal"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1464,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 144,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "acf7f41e3fcf040a9e6493a8b085211497e55843a887b6adf9fb5c4150110eb0",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 7,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "[{\"content\":\"{\\\"ticket_id\\\":\\\"tkt_1\\\",\\\"priority\\\":\\\"normal\\\"}\",\"tool_use_id\":\"toolu_01Cq7ZfUbqRmVbnQGGjAtz57\",\"type\":\"tool_result\"}]"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYp5iRMMJA5CkmhdhTq",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "tool_use",
+            "id": "toolu_01R9oTKY1ERfbM8ApaevSTd4",
+            "name": "resolve",
+            "input": {
+              "action": "escalated",
+              "message": "Your refund request for payment pay_002 (€1,200.00) has been escalated for manual approval due to the amount exceeding our auto-approval limit. A member of our team will review and process this shortly.",
+              "references": [
+                "pay_002",
+                "tkt_1"
+              ]
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1634,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 143,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    }
+  ]
+}

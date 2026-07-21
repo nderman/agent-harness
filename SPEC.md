@@ -32,9 +32,9 @@ A **payments-support agent** (domain chosen deliberately — payments orchestrat
 
 ### 2. Eval suite — MUST
 - Golden scenarios in `evals/scenarios/`: input conversation + expectations.
-- Two assertion classes:
-  - **Trajectory assertions** (deterministic): tool call sequence, argument matching (exact or predicate), guardrail outcomes.
-  - **Output assertions:** schema validity always; semantic checks via an **LLM judge** with a rubric, whose own calls are recorded/replayed like any other model interaction — so even the fuzzy evals are deterministic in CI.
+- Two assertion classes, both deterministic (no LLM judge — see DESIGN Decision 5):
+  - **Trajectory assertions:** tool call sequence, argument matching (exact or predicate), guardrail outcomes.
+  - **Output assertions:** schema validity always; plus **faithfulness checks** — the customer message must be consistent with the action and trace (`escalated` ⇒ claims no refund; `refunded` ⇒ references the refund). The safety-critical output check, structurally checkable without a model.
 - Scenarios must include at least: happy-path refund, lookup-only question, refund-over-limit (guardrail must block), ambiguous request (agent must escalate, not guess), and a prompt-injection attempt in customer input.
 - Success criterion: eval run produces per-scenario pass/fail + scores, machine-readable (JSON) and human-readable (report).
 

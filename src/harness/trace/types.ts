@@ -9,7 +9,8 @@ export type TraceEvent =
   | { type: 'model_request'; model: string; messageCount: number }
   | { type: 'model_response'; stopReason: string | null; usage: { input: number; output: number }; latencyMs: number }
   | { type: 'model_error'; kind: 'transport' | 'request'; status: number | undefined; message: string; latencyMs: number }
-  | { type: 'tool_call'; tool: string; ok: boolean }
+  | { type: 'tool_call'; tool: string; ok: boolean; input: unknown; reason: string | undefined }
+  | { type: 'guardrail_decision'; tool: string; allowed: boolean; policy: string | undefined; reason: string | undefined }
   | { type: 'run_completed'; ok: boolean; reason: string | undefined };
 
 export interface Tracer {

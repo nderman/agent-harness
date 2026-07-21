@@ -1,10 +1,9 @@
-import { SequentialIdGenerator, SystemClock } from '../harness/determinism';
+import { SystemClock } from '../harness/determinism';
 import { LiveClient } from '../harness/model-client/live-client';
 import { CollectingTracer } from '../harness/trace/tracer';
-import { createPaymentsDb } from '../agent/payments-db';
 import { runAgent } from '../agent/loop';
 import { HAPPY_PATH_REFUND } from '../agent/scenarios';
-import { DOMAIN_TOOLS } from '../agent/tools';
+import { DOMAIN_TOOLS, createRunContext } from '../agent/tools';
 import { requireApiKey } from './env';
 
 /**
@@ -15,15 +14,14 @@ import { requireApiKey } from './env';
 async function main(): Promise<void> {
   const apiKey = requireApiKey('demo');
 
-  const ids = new SequentialIdGenerator();
-  const db = createPaymentsDb(ids);
+  const ctx = createRunContext();
   const tracer = new CollectingTracer();
   const client = new LiveClient({ apiKey, clock: new SystemClock(), tracer });
 
   const input = HAPPY_PATH_REFUND.input;
   console.log(`\n> customer: ${input}\n`);
 
-  const outcome = await runAgent({ client, input, tools: DOMAIN_TOOLS, ctx: { db, ids }, tracer });
+  const outcome = await runAgent({ client, input, tools: DOMAIN_TOOLS, ctx, tracer });
 
   console.log('--- trace ---');
   for (const event of tracer.events) console.log(event);
@@ -32,7 +30,7 @@ async function main(): Promise<void> {
   console.log(JSON.stringify(outcome, null, 2));
 
   if (!outcome.ok) process.exit(1);
-  console.log(`\npay_001 status is now: ${db.findById('pay_001')?.status}`);
+  console.log(`\npay_001 status is now: ${ctx.db.findById('pay_001')?.status}`);
 }
 
 void main();

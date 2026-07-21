@@ -1,0 +1,200 @@
+{
+  "scenario": "ambiguous-request",
+  "entries": [
+    {
+      "fingerprint": "ea0e91fbd230df2a57570c0b567320a801a9309860160e88d5b917dd6934d529",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 1,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "Something is wrong with one of my recent payments, but I do not have the details in front of me. Can you sort it out?"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYpE6CwbMZtWvxw7TYA",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I'd be happy to help you with your payment issue! To look up your payment, I'll need one of the following:\n\n1. **Payment ID** - if you have it\n2. **Email address** - the email associated with your account/payment\n\nCould you provide either of these so I can find your payment and help resolve the issue?"
+          }
+        ],
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1168,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 76,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "5887318c99d8f28f57f235f6829295318319a4239c603e01204bfed938443b08",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 3,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "Please finish by calling the resolve tool."
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYpLgaogz4XTUxNuELD",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I appreciate you reminding me, but I actually need your help first before I can resolve this. I don't have the information needed to look up your payment yet.\n\nTo find your payment, please provide either:\n1. Your **payment ID**, or\n2. Your **email address** (associated with the payment)\n\nOnce you provide one of these, I'll be able to look up your payment details and help you sort out what's wrong."
+          }
+        ],
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1255,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 97,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "4fd52ec7ba55b078c21d9242df607bcbbe72b38f4bc6480e5a157c7f1d5a2701",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 5,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "Please finish by calling the resolve tool."
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYpU65AHzgxG2sobjSW",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "I understand you'd like me to finish, but I'm unable to resolve your issue without more information. I need either a payment ID or email address to look up your payment and help you."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01GHrTfM4VCxNZWB9Y2J67Dx",
+            "name": "escalate",
+            "input": {
+              "reason": "Customer reported a payment issue but did not provide payment ID or email address needed to look up the payment. Customer has requested resolution without providing necessary information.",
+              "priority": "normal"
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1363,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 137,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    },
+    {
+      "fingerprint": "93342b4232f98f6ada666c9de0eb57453a1a4433b18c42161e25dd65435dbfea",
+      "request": {
+        "model": "claude-haiku-4-5",
+        "messageCount": 7,
+        "tools": [
+          "lookup_payment",
+          "issue_refund",
+          "escalate",
+          "resolve"
+        ],
+        "systemDigest": "14bd79449c76",
+        "lastMessage": "[{\"content\":\"{\\\"ticket_id\\\":\\\"tkt_1\\\",\\\"priority\\\":\\\"normal\\\"}\",\"tool_use_id\":\"toolu_01GHrTfM4VCxNZWB9Y2J67Dx\",\"type\":\"tool_result\"}]"
+      },
+      "response": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CdFYpcgkdA1mZL8sZnim7",
+        "type": "message",
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Since I don't have the details needed to investigate your payment issue, I've escalated your case to our support team who will be able to assist you further."
+          },
+          {
+            "type": "tool_use",
+            "id": "toolu_01Kgrznw52ktsJ9h33zMESiJ",
+            "name": "resolve",
+            "input": {
+              "action": "escalated",
+              "message": "Your payment issue has been escalated to our support team. They will contact you to gather the necessary details (payment ID or email address) and investigate what went wrong with your recent payment.",
+              "references": [
+                "tkt_1"
+              ]
+            },
+            "caller": {
+              "type": "direct"
+            }
+          }
+        ],
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 1526,
+          "cache_creation_input_tokens": 0,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 0
+          },
+          "output_tokens": 161,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        }
+      }
+    }
+  ]
+}

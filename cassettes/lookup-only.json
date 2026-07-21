@@ -1,8 +1,8 @@
 {
-  "scenario": "happy-path-refund",
+  "scenario": "lookup-only",
   "entries": [
     {
-      "fingerprint": "22f00dd73f4be45cd90fa61775b338b3f47e80caa4338241c2bc8832bb531326",
+      "fingerprint": "b218e8b76d2546b6684454eb1cbbefe88a7c2b814e6a7ce500c46b5ac0746d0d",
       "request": {
         "model": "claude-haiku-4-5",
         "messageCount": 1,
@@ -13,21 +13,17 @@
           "resolve"
         ],
         "systemDigest": "14bd79449c76",
-        "lastMessage": "Hi, please refund my payment pay_001 in full — the order was cancelled."
+        "lastMessage": "What is the current status of payment pay_001? Please do not make any changes."
       },
       "response": {
         "model": "claude-haiku-4-5-20251001",
-        "id": "msg_011CdFYnn9xiPM9f6vcNcdA3",
+        "id": "msg_011CdFYo9UrmisVQubYYvdpA",
         "type": "message",
         "role": "assistant",
         "content": [
           {
-            "type": "text",
-            "text": "I'll look up the payment details first to verify the amount, then process the full refund for you."
-          },
-          {
             "type": "tool_use",
-            "id": "toolu_01QzWh6LfBXTRrRKKP54mLTg",
+            "id": "toolu_01Jhro9FwmQujGoDpqkgCob3",
             "name": "lookup_payment",
             "input": {
               "payment_id": "pay_001"
@@ -41,21 +37,21 @@
         "stop_sequence": null,
         "stop_details": null,
         "usage": {
-          "input_tokens": 1159,
+          "input_tokens": 1158,
           "cache_creation_input_tokens": 0,
           "cache_read_input_tokens": 0,
           "cache_creation": {
             "ephemeral_5m_input_tokens": 0,
             "ephemeral_1h_input_tokens": 0
           },
-          "output_tokens": 80,
+          "output_tokens": 58,
           "service_tier": "standard",
           "inference_geo": "not_available"
         }
       }
     },
     {
-      "fingerprint": "c6a43cb2f0decfba29afe0ba3c598f8f04388a31b5e29519d996b42bb4c6747f",
+      "fingerprint": "ec821e94175b32936e8d994f401fff15e3a5761fdf411b66ba111ceee9de59da",
       "request": {
         "model": "claude-haiku-4-5",
         "messageCount": 3,
@@ -70,47 +66,34 @@
       },
       "response": {
         "model": "claude-haiku-4-5-20251001",
-        "id": "msg_011CdFYntJnwJJ2Cq4NQX37W",
+        "id": "msg_011CdFYoHRbd1RbeHRFXzpcz",
         "type": "message",
         "role": "assistant",
         "content": [
           {
             "type": "text",
-            "text": "Perfect! The payment of €42.50 (4250 cents) is captured and eligible for refund. I'll now process the full refund due to the cancelled order."
-          },
-          {
-            "type": "tool_use",
-            "id": "toolu_01QwdjRkszNLgP9PVux1siM9",
-            "name": "issue_refund",
-            "input": {
-              "payment_id": "pay_001",
-              "amount": 4250,
-              "reason": "Order cancelled"
-            },
-            "caller": {
-              "type": "direct"
-            }
+            "text": "The payment **pay_001** has the following status:\n\n- **Status**: Captured\n- **Amount**: €42.50 (4250 cents)\n- **Currency**: EUR\n- **Payment Method**: Card\n- **Customer Email**: alice@example.com\n\nThe payment has been successfully captured. No changes have been made."
           }
         ],
-        "stop_reason": "tool_use",
+        "stop_reason": "end_turn",
         "stop_sequence": null,
         "stop_details": null,
         "usage": {
-          "input_tokens": 1291,
+          "input_tokens": 1268,
           "cache_creation_input_tokens": 0,
           "cache_read_input_tokens": 0,
           "cache_creation": {
             "ephemeral_5m_input_tokens": 0,
             "ephemeral_1h_input_tokens": 0
           },
-          "output_tokens": 133,
+          "output_tokens": 76,
           "service_tier": "standard",
           "inference_geo": "not_available"
         }
       }
     },
     {
-      "fingerprint": "1cbdd1f933ccecbc2f3c46100cc0d3052ac8ea94d839a9b205265aecc85e49a8",
+      "fingerprint": "9789078103db0c245eab170a7080d6411295321ce49cffccd84129598e08fc50",
       "request": {
         "model": "claude-haiku-4-5",
         "messageCount": 5,
@@ -121,24 +104,23 @@
           "resolve"
         ],
         "systemDigest": "14bd79449c76",
-        "lastMessage": "[{\"content\":\"{\\\"ok\\\":true,\\\"refund\\\":{\\\"id\\\":\\\"re_1\\\",\\\"paymentId\\\":\\\"pay_001\\\",\\\"amount\\\":4250,\\\"currency\\\":\\\"EUR\\\",\\\"reason\\\":\\\"Order cancelled\\\"}}\",\"tool_use…"
+        "lastMessage": "Please finish by calling the resolve tool."
       },
       "response": {
         "model": "claude-haiku-4-5-20251001",
-        "id": "msg_011CdFYo1TAMGadbrkHzZceC",
+        "id": "msg_011CdFYoUPu46WALFcQdUyXx",
         "type": "message",
         "role": "assistant",
         "content": [
           {
             "type": "tool_use",
-            "id": "toolu_012bkgVfJ87ubeMVB52zExZK",
+            "id": "toolu_01CtGH3kiaomPu6fiJautL3L",
             "name": "resolve",
             "input": {
-              "action": "refunded",
-              "message": "Your payment has been fully refunded. The amount of €42.50 has been credited back to your card due to the order cancellation. The refund should appear in your account within 3-5 business days.",
+              "action": "answered",
+              "message": "Payment pay_001 has been looked up. The payment is captured for €42.50 and is associated with alice@example.com. No changes were made.",
               "references": [
-                "pay_001",
-                "re_1"
+                "pay_001"
               ]
             },
             "caller": {
@@ -150,14 +132,14 @@
         "stop_sequence": null,
         "stop_details": null,
         "usage": {
-          "input_tokens": 1473,
+          "input_tokens": 1355,
           "cache_creation_input_tokens": 0,
           "cache_read_input_tokens": 0,
           "cache_creation": {
             "ephemeral_5m_input_tokens": 0,
             "ephemeral_1h_input_tokens": 0
           },
-          "output_tokens": 140,
+          "output_tokens": 123,
           "service_tier": "standard",
           "inference_geo": "not_available"
         }

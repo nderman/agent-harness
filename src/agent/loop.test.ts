@@ -38,6 +38,30 @@ describe('runAgent — happy path', () => {
   });
 });
 
+describe('runAgent — guardrails (Gate 2)', () => {
+  it('blocks an over-ceiling refund and recovers by escalating', async () => {
+    const ctx = makeCtx();
+    const client = new FakeModelClient([
+      toolUseTurn('t1', 'lookup_payment', { payment_id: 'pay_002' }),
+      toolUseTurn('t2', 'issue_refund', { payment_id: 'pay_002', amount: 120000, reason: 'customer request' }), // over the ceiling
+      toolUseTurn('t3', 'escalate', { reason: 'refund over auto-approval limit', priority: 'high' }),
+      toolUseTurn('t4', 'resolve', { action: 'escalated', message: 'Escalated to a human for approval.', references: ['pay_002', 'tkt_1'] }),
+    ]);
+    const tracer = new CollectingTracer();
+
+    const outcome = await runAgent({ client, input: 'refund pay_002 in full', tools: DOMAIN_TOOLS, ctx, tracer });
+
+    expect(outcome).toMatchObject({ ok: true, resolution: { action: 'escalated' } });
+    // the refund was blocked — the payment is untouched
+    expect(ctx.db.findById('pay_002')?.status).toBe('captured');
+    // the block is a first-class, traced decision the eval layer can assert on
+    const denials = tracer.ofType('guardrail_decision').filter((d) => !d.allowed);
+    expect(denials).toEqual([
+      { type: 'guardrail_decision', tool: 'issue_refund', allowed: false, policy: 'ceiling', reason: expect.stringContaining('escalate') },
+    ]);
+  });
+});
+
 describe('runAgent — model-behaviour re-prompts (bounded)', () => {
   it('recovers when a schema-invalid tool call is followed by a valid resolution', async () => {
     const ctx = makeCtx();

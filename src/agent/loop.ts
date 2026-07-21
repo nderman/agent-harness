@@ -27,7 +27,7 @@ export interface RunAgentArgs {
 
 export type AgentFailure =
   | 'no_resolution' // model kept ending its turn without calling resolve
-  | 'reprompt_exhausted' // too many schema-invalid / unknown-tool emissions
+  | 'reprompt_exhausted' // too many rejected emissions: Gate 1 invalid, unknown tool, or Gate 2 denial
   | 'loop_cap' // ran past the iteration ceiling
   | 'request_error' // fail-fast: a config bug reached the model call
   | 'transport_error'; // capacity/network, already retried by the SDK
@@ -74,9 +74,10 @@ export async function runAgent(args: RunAgentArgs): Promise<AgentOutcome> {
   tracer.emit({ type: 'run_started', input: args.input });
   const messages: Anthropic.MessageParam[] = [{ role: 'user', content: args.input }];
   // Two independent budgets so the reported failure matches its cause: empty
-  // turns drive `no_resolution`, invalid emissions drive `reprompt_exhausted`.
+  // turns drive `no_resolution`; rejected emissions (Gate 1 invalid, unknown
+  // tool, or Gate 2 policy denial) drive `reprompt_exhausted`.
   let emptyTurns = 0;
-  let invalidEmissions = 0;
+  let rejectedEmissions = 0;
 
   const finish = (outcome: AgentOutcome): AgentOutcome => {
     tracer.emit({ type: 'run_completed', ok: outcome.ok, reason: outcome.ok ? undefined : outcome.reason });
@@ -114,12 +115,12 @@ export async function runAgent(args: RunAgentArgs): Promise<AgentOutcome> {
     for (const call of toolUses) {
       const succeed = (result: unknown): void => {
         results.push(okResult(call.id, result));
-        tracer.emit({ type: 'tool_call', tool: call.name, ok: true });
+        tracer.emit({ type: 'tool_call', tool: call.name, ok: true, input: call.input, reason: undefined });
       };
       const reject = (error: string): void => {
-        invalidEmissions++;
+        rejectedEmissions++;
         results.push(errorResult(call.id, error));
-        tracer.emit({ type: 'tool_call', tool: call.name, ok: false });
+        tracer.emit({ type: 'tool_call', tool: call.name, ok: false, input: call.input, reason: error });
       };
 
       if (call.name === RESOLVE_TOOL_NAME) {
@@ -139,13 +140,30 @@ export async function runAgent(args: RunAgentArgs): Promise<AgentOutcome> {
         continue;
       }
 
-      const outcome = tool.invoke(call.input, args.ctx);
-      if (outcome.status === 'ok') succeed(outcome.result);
-      else reject(outcome.error);
+      const parsed = tool.parse(call.input); // Gate 1: schema
+      if (!parsed.ok) {
+        reject(parsed.error);
+        continue;
+      }
+
+      if (tool.policy) {
+        // Gate 2: domain policy. Runs in the loop, between the model's proposal
+        // and execution — code the model cannot bypass — and is always traced.
+        const decision = tool.policy(parsed.value, args.ctx);
+        if (decision.allowed) {
+          tracer.emit({ type: 'guardrail_decision', tool: call.name, allowed: true, policy: undefined, reason: undefined });
+        } else {
+          tracer.emit({ type: 'guardrail_decision', tool: call.name, allowed: false, policy: decision.policy, reason: decision.reason });
+          reject(decision.reason);
+          continue;
+        }
+      }
+
+      succeed(tool.run(parsed.value, args.ctx));
     }
 
     if (resolution) return finish({ ok: true, resolution });
-    if (invalidEmissions > maxReprompts) return finish({ ok: false, reason: 'reprompt_exhausted', detail: 'too many invalid tool emissions' });
+    if (rejectedEmissions > maxReprompts) return finish({ ok: false, reason: 'reprompt_exhausted', detail: 'too many rejected tool emissions' });
     messages.push({ role: 'user', content: results });
   }
 

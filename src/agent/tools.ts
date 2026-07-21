@@ -1,29 +1,29 @@
 import { z } from 'zod';
-import type { IdGenerator } from '../harness/determinism';
-import type { PaymentsDb } from './payments-db';
+import { SequentialIdGenerator, type IdGenerator } from '../harness/determinism';
+import { checkRefund, type PolicyDecision } from './guardrails';
 import { formatZodError, toInputSchema } from './json-schema';
+import { createPaymentsDb, type PaymentsDb } from './payments-db';
 
 export interface ToolContext {
   db: PaymentsDb;
   ids: IdGenerator;
 }
 
-/**
- * Result of invoking a tool. `invalid` is a Gate 1 (schema) failure — the model
- * emitted arguments that don't fit the schema. Gate 2 (policy) lands in Phase 3
- * as a third `denied` variant; the loop already switches on this union so adding
- * it is additive.
- */
-export type ToolOutcome =
-  | { status: 'ok'; result: unknown }
-  | { status: 'invalid'; error: string };
+export type ParseResult = { ok: true; value: unknown } | { ok: false; error: string };
 
+/**
+ * A tool the agent may call. The two gates (GUARDRAILS.md) are separable so the
+ * loop can run them in order and trace each: `parse` is Gate 1 (schema); the
+ * optional `policy` is Gate 2 (domain rules); `run` executes only once both pass.
+ * `run`/`policy` receive the parsed value — callers must pass `parse().value`.
+ */
 export interface RegisteredTool {
   name: string;
   description: string;
   inputSchema: Record<string, unknown>;
-  /** Validate (Gate 1) then run. Never throws for model-caused errors — returns them. */
-  invoke(rawInput: unknown, ctx: ToolContext): ToolOutcome;
+  parse(raw: unknown): ParseResult;
+  run(value: unknown, ctx: ToolContext): unknown;
+  policy?(value: unknown, ctx: ToolContext): PolicyDecision;
 }
 
 function defineTool<I>(spec: {
@@ -31,18 +31,24 @@ function defineTool<I>(spec: {
   description: string;
   schema: z.ZodType<I>;
   run: (input: I, ctx: ToolContext) => unknown;
+  policy?: (input: I, ctx: ToolContext) => PolicyDecision;
 }): RegisteredTool {
-  return {
+  const tool: RegisteredTool = {
     name: spec.name,
     description: spec.description,
     inputSchema: toInputSchema(spec.schema),
-    invoke(rawInput, ctx) {
-      const parsed = spec.schema.safeParse(rawInput);
-      if (!parsed.success) return { status: 'invalid', error: formatZodError(parsed.error) };
-      // parsed.data is I by construction — the cast is confined to this boundary.
-      return { status: 'ok', result: spec.run(parsed.data, ctx) };
+    parse(raw) {
+      const parsed = spec.schema.safeParse(raw);
+      return parsed.success ? { ok: true, value: parsed.data } : { ok: false, error: formatZodError(parsed.error) };
     },
+    // `value` comes from parse() → the cast is confined to this boundary.
+    run: (value, ctx) => spec.run(value as I, ctx),
   };
+  if (spec.policy) {
+    const policy = spec.policy;
+    tool.policy = (value, ctx) => policy(value as I, ctx);
+  }
+  return tool;
 }
 
 const LookupInput = z.object({
@@ -83,12 +89,11 @@ export const issueRefundTool = defineTool({
   name: 'issue_refund',
   description: 'Refund a captured payment. `amount` is in minor units (cents) and must not exceed the payment.',
   schema: RefundInput,
-  run: (input, ctx) => {
-    const payment = ctx.db.findById(input.payment_id);
-    if (!payment) return { ok: false, error: `no payment ${input.payment_id}` };
-    const refund = ctx.db.recordRefund({ paymentId: input.payment_id, amount: input.amount, reason: input.reason });
-    return { ok: true, refund };
-  },
+  policy: (input, ctx) => checkRefund(input, ctx.db),
+  run: (input, ctx) => ({
+    ok: true,
+    refund: ctx.db.recordRefund({ paymentId: input.payment_id, amount: input.amount, reason: input.reason }),
+  }),
 });
 
 export const escalateTool = defineTool({
@@ -100,3 +105,9 @@ export const escalateTool = defineTool({
 
 /** The domain tools, in a stable order (order feeds request fingerprints in Phase 2). */
 export const DOMAIN_TOOLS: readonly RegisteredTool[] = [lookupPaymentTool, issueRefundTool, escalateTool];
+
+/** Fresh, deterministic per-run state (seeded db + id generator) — one place every run site builds its context. */
+export function createRunContext(): ToolContext {
+  const ids = new SequentialIdGenerator();
+  return { db: createPaymentsDb(ids), ids };
+}

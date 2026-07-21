@@ -24,11 +24,12 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [ ] [S] Record-mode "append vs overwrite" ergonomics
 
 ## Phase 3 — Guardrails + eval suite (Day 2) ✦ gate: over-limit scenario blocked AND recovered-by-escalation, asserted in a test
-- [ ] [M] Policy layer per GUARDRAILS.md (ceiling, over-refund, double refund, state) — unit-tested exhaustively, cheap
-- [ ] [M] Guardrail wiring in loop: deny → structured tool error → trace event
-- [ ] [M] Scenario format + eval runner; trajectory assertions (sequence, argument predicates, guardrail outcomes)
-- [ ] [M] Five core scenarios recorded: happy refund · lookup-only · over-limit block · ambiguous→escalate · prompt-injection
-- [ ] [M] LLM judge (rubric: message faithful to trace, appropriate tone) via `ModelClient` (`claude-opus-4-8`), recorded/replayed
+- [x] [M] Policy layer per GUARDRAILS.md (ceiling, over-refund, double refund, state) — unit-tested exhaustively, cheap
+- [x] [M] Guardrail wiring in loop: deny → structured tool error → trace event
+- [x] [M] Scenario format + eval runner; trajectory assertions (sequence, argument predicates, guardrail outcomes)
+- [x] [M] Five core scenarios recorded: happy refund · lookup-only · over-limit block · ambiguous→escalate · prompt-injection
+- [ ] [M] ~~LLM judge~~ → **deterministic faithfulness checks** in the eval runner (message consistent with action/trace). Judge dropped — DESIGN Decision 5.
+- [ ] [M] Live drift canary — re-run scenarios against the live model, diff trajectory vs baseline; prove it by forcing a model swap
 - [ ] [S] Additional scenarios (double-refund attempt, wrong-customer lookup)
 
 ## Phase 4 — Trace, report, regression, hosted link (Day 3, morning) ✦ gate: red CI from a deliberately broken prompt; live report URL

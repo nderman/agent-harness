@@ -71,11 +71,15 @@ Covered fully in `GUARDRAILS.md`. The two design points that belong here:
 - **Placement:** validation and policy run in the loop, between model output and tool execution. The model never has the option to skip them — they're not prompt instructions, they're code.
 - **Violations return to the model as structured tool errors** rather than aborting the run. A production agent that hard-crashes on a blocked action is unusable; one that gets "refund blocked: exceeds €500 limit — escalate instead" recovers gracefully. The evals assert on both the block *and* the recovery.
 
-## Decision 5 — Evals assert trajectories first, judge second
+## Decision 5 — Evals assert deterministically; no LLM judge
 
-**The choice:** assertion priority is (1) deterministic trajectory checks — tool sequence, argument predicates, guardrail outcomes; (2) output schema validity; (3) LLM judge with a rubric, only for genuinely fuzzy qualities (tone, faithfulness of the customer message to what actually happened).
+**The choice:** assertion priority is (1) trajectory checks — tool sequence, argument predicates, guardrail outcomes; (2) output schema validity; (3) **deterministic faithfulness checks** — the customer message must be consistent with the action and trace (`action=escalated` ⇒ it must not claim a refund happened; `action=refunded` ⇒ it references the refund). There is **no LLM judge.**
 
-**Why:** deterministic assertions are cheap, precise, and debuggable — use them for everything they can express. The judge is reserved for what they can't, and is itself run through record/replay (judge = just another `ModelClient` consumer), so judged evals are deterministic in CI too. Judge model: `claude-opus-4-8` — strongest available judge, and since its calls are recorded once and replayed forever, the cost argument against a big judge model evaporates. (A neat corollary worth saying out loud in the interview: record/replay changes the economics of using expensive models for evaluation.)
+**Why (a decision changed mid-build):** the original plan had a recorded LLM judge for fuzzy qualities (tone, faithfulness). It was dropped. Faithfulness-to-trace — the safety-critical part — is *structurally checkable* without a model: it's the same "scoring matrix over outcomes" a deterministic eval already is. An LLM judge would add a nondeterministic dependency to chase a small residue (subtle prose quality) that isn't worth it, and it cuts against the harness's own thesis that agent behaviour should be tested *deterministically*. Keeping the eval layer model-free means the whole suite is exactly reproducible, not just mostly.
+
+**Tradeoff accepted (stated so it's a choice, not an oversight):** a subtle *semantic* hallucination that is structurally consistent — a plausible-but-wrong detail that still matches the action — is not caught. That was the only class the judge would have added, and it's the flakiest to detect. Everything that changes an *outcome* is caught deterministically.
+
+**Related — catching model drift:** the offline suite is frozen (replay), so it validates that *our* changes don't break known-good behaviour but cannot see the live model drift underneath us. A separate **live drift canary** re-runs the scenarios against the live model and applies the same deterministic checks, diffing the trajectory against the recorded baseline — that's what catches "a new model version stopped escalating." It needs a key, runs on a cadence, and is not part of offline CI.
 
 ## Decision 6 — Traces are typed events, reports are derived
 
