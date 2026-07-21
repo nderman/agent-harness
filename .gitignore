@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+*.log
+.DS_Store
+# Traces from local runs are ephemeral; cassettes and baselines ARE committed
+traces/local/
