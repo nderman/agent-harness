@@ -23,7 +23,8 @@ import { requireApiKey } from './env';
 async function main(): Promise<void> {
   const apiKey = requireApiKey('canary');
   const model = process.argv[2] ?? DEFAULTS.agentModel;
-  const runs = Math.max(1, Number(process.argv[3] ?? '1'));
+  const parsedRuns = Number(process.argv[3] ?? '1');
+  const runs = Number.isFinite(parsedRuns) && parsedRuns >= 1 ? Math.floor(parsedRuns) : 1;
   console.log(`drift canary: ${SCENARIOS.length} scenarios × ${runs} run(s) vs ${model} (live)\n`);
 
   let drifted = 0;

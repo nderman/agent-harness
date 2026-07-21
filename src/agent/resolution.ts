@@ -15,6 +15,7 @@ export const Resolution = z.object({
 });
 
 export type Resolution = z.infer<typeof Resolution>;
+export type ResolutionAction = Resolution['action'];
 
 export const RESOLVE_TOOL_NAME = 'resolve';
 

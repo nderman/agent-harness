@@ -1,9 +1,8 @@
-import { RESOLVE_TOOL_NAME } from '../../agent/resolution';
 import { SCENARIOS } from '../../agent/scenarios';
 import { ReplayMissError } from '../cassette/replay-client';
-import { DEFAULTS } from '../model-client/defaults';
 import { assertScenario, replayScenario } from '../eval/runner';
 import { checkFaithfulness } from '../eval/faithfulness';
+import { deniedPolicies, toolSequence } from '../eval/trajectory';
 import type { TraceEvent } from '../trace/types';
 import type { BaselineEntry } from './baseline';
 import { computeMetrics, type RunMetrics } from './metrics';
@@ -34,10 +33,10 @@ export async function runSuite(): Promise<SuiteRun> {
         pass: result.pass,
         failures: result.failures,
         action: outcome.ok ? outcome.resolution.action : null,
-        toolSequence: tracer.ofType('tool_call').map((e) => e.tool).filter((t) => t !== RESOLVE_TOOL_NAME),
-        deniedPolicies: tracer.ofType('guardrail_decision').filter((d) => !d.allowed).map((d) => d.policy ?? 'unknown'),
+        toolSequence: toolSequence(tracer),
+        deniedPolicies: deniedPolicies(tracer),
         faithfulnessViolations: outcome.ok ? checkFaithfulness(outcome.resolution, tracer) : [],
-        metrics: computeMetrics(tracer, DEFAULTS.agentModel),
+        metrics: computeMetrics(tracer),
       });
       traces[scenario.name] = tracer.events;
     } catch (error) {

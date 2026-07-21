@@ -10,7 +10,7 @@ describe('costUsd', () => {
     expect(costUsd('claude-opus-4-8', { input: 1_000_000, output: 0 })).toBeCloseTo(5.0);
   });
 
-  it('returns 0 for an unknown model rather than throwing', () => {
-    expect(costUsd('mystery-model', { input: 1000, output: 1000 })).toBe(0);
+  it('throws on an unknown model rather than silently pricing at $0', () => {
+    expect(() => costUsd('mystery-model', { input: 1000, output: 1000 })).toThrow(/no pricing/);
   });
 });

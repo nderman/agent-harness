@@ -1,3 +1,4 @@
+import type { ResolutionAction } from '../../agent/resolution';
 import type { BaselineDiff } from './baseline';
 import type { RunMetrics } from './metrics';
 
@@ -5,7 +6,7 @@ export interface ScenarioReport {
   scenario: string;
   pass: boolean;
   failures: string[];
-  action: string | null;
+  action: ResolutionAction | null;
   toolSequence: string[];
   deniedPolicies: string[];
   /** Structural inconsistencies between the message and what actually happened. */
@@ -15,19 +16,35 @@ export interface ScenarioReport {
 
 const usd = (n: number): string => `$${n.toFixed(5)}`;
 
+interface Summary {
+  passed: number;
+  total: number;
+  totalCost: number;
+  totalTokens: number;
+  blocked: number;
+  slipped: number;
+}
+
+function summarize(reports: readonly ScenarioReport[]): Summary {
+  return {
+    passed: reports.filter((r) => r.pass).length,
+    total: reports.length,
+    totalCost: reports.reduce((s, r) => s + r.metrics.costUsd, 0),
+    totalTokens: reports.reduce((s, r) => s + r.metrics.inputTokens + r.metrics.outputTokens, 0),
+    blocked: reports.reduce((s, r) => s + r.metrics.guardrailDenials, 0),
+    slipped: reports.reduce((s, r) => s + r.faithfulnessViolations.length, 0),
+  };
+}
+
 /** Render the eval run as markdown. Pure function of the run data (Decision 6). */
 export function renderMarkdown(reports: readonly ScenarioReport[], diff: BaselineDiff): string {
-  const passed = reports.filter((r) => r.pass).length;
-  const totalCost = reports.reduce((s, r) => s + r.metrics.costUsd, 0);
-  const totalTokens = reports.reduce((s, r) => s + r.metrics.inputTokens + r.metrics.outputTokens, 0);
+  const { passed, total, totalCost, totalTokens, blocked, slipped } = summarize(reports);
   const out: string[] = [];
 
   out.push('# Eval report', '');
-  out.push(`**${passed}/${reports.length}** scenarios passed · **${usd(totalCost)}** · **${totalTokens}** tokens · replayed offline`, '');
+  out.push(`**${passed}/${total}** scenarios passed · **${usd(totalCost)}** · **${totalTokens}** tokens · replayed offline`, '');
 
   // The dangerous error, weighted on its own — never averaged into the pass rate.
-  const blocked = reports.reduce((s, r) => s + r.metrics.guardrailDenials, 0);
-  const slipped = reports.reduce((s, r) => s + r.faithfulnessViolations.length, 0);
   out.push('## Safety');
   out.push(`- Unsafe actions **blocked** by guardrails: **${blocked}**`);
   out.push(`- Unsafe / inconsistent output that **slipped through** (faithfulness violations): **${slipped}**`, '');
@@ -68,15 +85,13 @@ export function renderMarkdown(reports: readonly ScenarioReport[], diff: Baselin
   return `${out.join('\n')}\n`;
 }
 
+// HTML-text escaper (not attribute-safe). Scenario names are developer-authored
+// kebab-case identifiers from SCENARIOS, so the href / trace-path uses are trusted.
 const esc = (s: string): string => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /** Self-contained HTML report for the hosted link — no external assets, theme-aware. */
 export function renderHtml(reports: readonly ScenarioReport[], diff: BaselineDiff): string {
-  const passed = reports.filter((r) => r.pass).length;
-  const totalCost = reports.reduce((s, r) => s + r.metrics.costUsd, 0);
-  const totalTokens = reports.reduce((s, r) => s + r.metrics.inputTokens + r.metrics.outputTokens, 0);
-  const blocked = reports.reduce((s, r) => s + r.metrics.guardrailDenials, 0);
-  const slipped = reports.reduce((s, r) => s + r.faithfulnessViolations.length, 0);
+  const { passed, total, totalCost, totalTokens, blocked, slipped } = summarize(reports);
 
   const tile = (label: string, value: string, warn = false): string =>
     `<div class="tile${warn ? ' warn' : ''}"><div class="v">${value}</div><div class="l">${label}</div></div>`;
@@ -124,7 +139,7 @@ export function renderHtml(reports: readonly ScenarioReport[], diff: BaselineDif
   <h1>Eval report</h1>
   <p class="sub">Payments-support agent · replayed offline from committed cassettes · zero live API calls</p>
   <div class="tiles">
-    ${tile('scenarios passed', `${passed}/${reports.length}`)}
+    ${tile('scenarios passed', `${passed}/${total}`)}
     ${tile('cost', usd(totalCost))}
     ${tile('tokens', String(totalTokens))}
     ${tile('unsafe blocked', String(blocked))}

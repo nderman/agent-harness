@@ -1,3 +1,6 @@
+import type { ResolutionAction } from '../../agent/resolution';
+import { arrayEquals } from '../eval/trajectory';
+
 /**
  * Regression detection: a committed snapshot of each scenario's *actual*
  * behaviour (pass, action, trajectory, guardrail outcomes). Re-running the suite
@@ -7,7 +10,7 @@
  */
 export interface BaselineEntry {
   pass: boolean;
-  action: string | null;
+  action: ResolutionAction | null;
   toolSequence: string[];
   deniedPolicies: string[];
 }
@@ -26,8 +29,6 @@ export interface BaselineDiff {
   notes: Change[];
 }
 
-const sameList = (a: readonly string[], b: readonly string[]): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
-
 export function diffBaseline(current: Record<string, BaselineEntry>, baseline: Baseline): BaselineDiff {
   const diff: BaselineDiff = { regressions: [], improvements: [], notes: [] };
 
@@ -37,12 +38,24 @@ export function diffBaseline(current: Record<string, BaselineEntry>, baseline: B
       diff.notes.push({ scenario, kind: 'new-scenario', detail: 'not in baseline' });
       continue;
     }
-    if (before.pass && !now.pass) diff.regressions.push({ scenario, kind: 'now-failing', detail: 'passed in baseline, now fails' });
-    if (!before.pass && now.pass) diff.improvements.push({ scenario, kind: 'now-passing', detail: 'failed in baseline, now passes' });
-    if (before.action !== now.action) {
-      diff.regressions.push({ scenario, kind: 'action-changed', detail: `${before.action} → ${now.action}` });
+    // A pass-state flip is the headline; the action/trajectory necessarily change
+    // with it, so don't double-report those — gate them on the pass state being
+    // unchanged (otherwise a fix reads as regressions and reds CI).
+    if (before.pass && !now.pass) {
+      diff.regressions.push({ scenario, kind: 'now-failing', detail: 'passed in baseline, now fails' });
+      continue;
     }
-    if (!sameList(before.toolSequence, now.toolSequence) || !sameList(before.deniedPolicies, now.deniedPolicies)) {
+    if (!before.pass && now.pass) {
+      diff.improvements.push({ scenario, kind: 'now-passing', detail: 'failed in baseline, now passes' });
+      continue;
+    }
+    if (!before.pass && !now.pass) continue; // both failing — a behaviour diff between two broken runs is noise
+
+    // Both passing: a changed action or path is a genuine behaviour drift.
+    if (before.action !== now.action) {
+      diff.regressions.push({ scenario, kind: 'action-changed', detail: `${before.action ?? '—'} → ${now.action ?? '—'}` });
+    }
+    if (!arrayEquals(before.toolSequence, now.toolSequence) || !arrayEquals(before.deniedPolicies, now.deniedPolicies)) {
       diff.regressions.push({
         scenario,
         kind: 'trajectory-changed',

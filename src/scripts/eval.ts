@@ -33,6 +33,15 @@ async function main(): Promise<void> {
   console.log(markdown);
 
   if (update) {
+    // A replay miss is a broken recording, not agent behaviour — never freeze it in.
+    const stale = reports.filter((r) => r.failures.some((f) => f.includes('Replay miss')));
+    if (stale.length > 0) {
+      console.error(`refusing to update baseline — ${stale.length} stale cassette(s): ${stale.map((r) => r.scenario).join(', ')}. Re-record first.`);
+      process.exit(1);
+    }
+    const failing = reports.filter((r) => !r.pass);
+    if (failing.length > 0) console.warn(`warning: baselining ${failing.length} failing scenario(s): ${failing.map((r) => r.scenario).join(', ')}`);
+
     const sorted: Baseline = {};
     for (const key of Object.keys(current).sort()) sorted[key] = current[key]!;
     mkdirSync('evals', { recursive: true });
