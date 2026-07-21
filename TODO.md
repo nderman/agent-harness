@@ -10,11 +10,11 @@ Cut order if behind: HTML report → semantic-judge polish → regression thresh
 - [x] [M] `src/harness/determinism.ts` (injected clock + ID gen) — exists before anything can cheat
 
 ## Phase 1 — Agent + tools (Day 1) ✦ gate: `npm run demo` completes a live happy-path refund
-- [ ] [M] Fixture payments DB + the three tools (`lookup_payment`, `issue_refund`, `escalate`) with zod schemas — unit-tested directly
-- [ ] [M] `ModelClient` interface + `LiveClient` wrapper: `defaults.ts` (models, max_tokens, timeout, retry/re-prompt bounds), `ModelClientError` union per DESIGN.md Decision 8, per-call trace emission
-- [ ] [M] Error-taxonomy tests: transport-retry vs re-prompt vs fail-fast paths, each against a fake client
-- [ ] [M] Agent loop: system prompt, tool dispatch, terminal `resolve` tool → validated `Resolution`; retry bound
-- [ ] [M] Loop unit tests against a hand-built fake `ModelClient` (scripted responses — proves the seam before cassettes exist)
+- [x] [M] Fixture payments DB + the three tools (`lookup_payment`, `issue_refund`, `escalate`) with zod schemas — unit-tested directly
+- [x] [M] `ModelClient` interface + `LiveClient` wrapper: `defaults.ts` (models, max_tokens, timeout, retry/re-prompt bounds), `ModelClientError` union per DESIGN.md Decision 8, per-call trace emission
+- [x] [M] Error-taxonomy tests: transport-retry vs re-prompt vs fail-fast paths, each against a fake client
+- [x] [M] Agent loop: system prompt, tool dispatch, terminal `resolve` tool → validated `Resolution`; retry bound
+- [x] [M] Loop unit tests against a hand-built fake `ModelClient` (scripted responses — proves the seam before cassettes exist)
 
 ## Phase 2 — Record/replay (Day 2, morning) ✦ gate: full suite green with API key unset
 - [ ] [M] Fingerprint function (canonical JSON, sorted keys) — property-style unit tests (stability, sensitivity to each component)

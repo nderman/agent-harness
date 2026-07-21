@@ -8,7 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "demo": "echo 'demo: implemented in Phase 1' >&2; exit 1",
+    "demo": "tsx src/scripts/demo.ts",
     "record": "echo 'record: implemented in Phase 2' >&2; exit 1",
     "eval": "echo 'eval: implemented in Phase 3' >&2; exit 1"
   },
