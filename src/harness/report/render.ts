@@ -84,7 +84,7 @@ export function renderHtml(reports: readonly ScenarioReport[], diff: BaselineDif
   const rows = reports
     .map(
       (r) => `<tr class="${r.pass ? 'ok' : 'bad'}">
-      <td>${esc(r.scenario)}</td>
+      <td><a href="traces/${esc(r.scenario)}.jsonl">${esc(r.scenario)}</a></td>
       <td>${r.pass ? '✅' : '❌'}</td>
       <td>${r.action ?? '—'}</td>
       <td class="traj">${esc(r.toolSequence.join(' → ') || '—')}</td>
