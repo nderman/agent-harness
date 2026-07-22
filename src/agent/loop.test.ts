@@ -7,6 +7,7 @@ import {
   toolUseTurn,
 } from '../harness/model-client/fake-client';
 import { makeModelClientError } from '../harness/model-client/types';
+import { FaultInjectingClient } from '../harness/model-client/fault-injecting-client';
 import { CollectingTracer } from '../harness/trace/tracer';
 import { createPaymentsDb } from './payments-db';
 import { runAgent } from './loop';
@@ -59,6 +60,37 @@ describe('runAgent — guardrails (Gate 2)', () => {
     expect(denials).toEqual([
       { type: 'guardrail_decision', tool: 'issue_refund', allowed: false, policy: 'ceiling', reason: expect.stringContaining('escalate') },
     ]);
+  });
+});
+
+describe('runAgent — fault injection (double_refund guardrail e2e)', () => {
+  it('forces a refund on an already-refunded payment; the guard denies and the agent recovers', async () => {
+    // pay_003 is already refunded, so a well-behaved model won't attempt to refund it
+    // again (the `double-refund` golden shows it declining first). We inject that unsafe
+    // call on turn 0 to drive the double_refund denial path end-to-end; after the denial
+    // the scripted inner client recovers by escalating. This is the only way to exercise
+    // this guardrail's denial through the real loop — see README "Known limitations".
+    const ctx = makeCtx();
+    const inner = new FakeModelClient([
+      toolUseTurn('t2', 'escalate', { reason: 'pay_003 already refunded — needs human review', priority: 'high' }),
+      toolUseTurn('t3', 'resolve', { action: 'escalated', message: 'Escalated: pay_003 is already refunded.', references: ['pay_003', 'tkt_1'] }),
+    ]);
+    const client = new FaultInjectingClient(inner, [
+      { callIndex: 0, toolUseId: 't1', toolName: 'issue_refund', input: { payment_id: 'pay_003', amount: 5000, reason: 'customer says it was reversed' } },
+    ]);
+    const tracer = new CollectingTracer();
+
+    const outcome = await runAgent({ client, input: 'reissue the refund on pay_003', tools: DOMAIN_TOOLS, ctx, tracer });
+
+    expect(outcome).toMatchObject({ ok: true, resolution: { action: 'escalated' } });
+    expect(client.injected).toEqual([0]); // the fault fired exactly once
+    // the guard fired end-to-end: a first-class, traced denial naming the double_refund policy
+    const denials = tracer.ofType('guardrail_decision').filter((d) => !d.allowed);
+    expect(denials).toEqual([
+      { type: 'guardrail_decision', tool: 'issue_refund', allowed: false, policy: 'double_refund', reason: expect.stringContaining('already been refunded') },
+    ]);
+    // no second refund was recorded — the store is untouched
+    expect(ctx.db.refundsFor('pay_003')).toHaveLength(0);
   });
 });
 

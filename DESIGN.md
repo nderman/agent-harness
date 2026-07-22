@@ -26,7 +26,7 @@ The modules under `src/` (as built):
 | Module | Responsibility |
 |---|---|
 | `agent/` | System prompt, tools + Gate-1 schemas + Gate-2 refund policy, the agentic loop, output schema, scenarios, fixture DB |
-| `harness/model-client/` | The `ModelClient` seam + `LiveClient`, the error taxonomy (`classify`), defaults, fake client for tests |
+| `harness/model-client/` | The `ModelClient` seam + `LiveClient`, the error taxonomy (`classify`), defaults, the scripted `FakeModelClient`, and `FaultInjectingClient` (forces an unsafe tool call to exercise a guardrail e2e) |
 | `harness/cassette/` | Fingerprint + `RecordingClient` / `ReplayClient` + the cassette store |
 | `harness/trace/` | Typed event union, JSONL writer, cost table |
 | `harness/eval/` | Scenario runner, trajectory + faithfulness assertions, shared trajectory helpers |
@@ -44,6 +44,7 @@ Dependency direction: the **agent depends on the harness's interfaces** (`ModelC
 - **Cassettes are semantic, not wire-format.** A cassette entry is "this conversation state → this assistant message", in the SDK's own types. Reviewable in a PR; meaningful in a diff. HTTP cassettes are headers, auth noise, and SSE chunk framing.
 - **Stability.** SDK internals (retries, streaming transport, header changes) don't invalidate recordings. HTTP interception couples your fixtures to the wire protocol du jour.
 - **It's the production pattern.** A model-client seam is also where you'd hang failover, caching, rate-limit shaping, and provider abstraction in a real system. The test seam and the production seam are the same seam — that's the design argument.
+- **One seam, many decorators.** Because it's a narrow interface, the same point composes: `RecordingClient`/`ReplayClient` for cassettes, and `FaultInjectingClient` to force an unsafe tool call the model would decline — the latter is how the `double_refund` guardrail's denial path gets exercised end-to-end (a well-behaved model never reaches it otherwise). Adding a capability is a new decorator, not a change to the loop.
 
 **Trade-off accepted:** we only capture what crosses the interface. If the SDK itself misbehaved (serialization bug), replay wouldn't catch it. Acceptable: that's the SDK vendor's test surface, not ours.
 
