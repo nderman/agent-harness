@@ -6,7 +6,7 @@ Their brief → what maps to it → status. Nothing ships until every [ ] under 
 
 ### 1. "A repository"
 - [x] Public GitHub repo, clean history, meaningful commit messages
-- [x] Fresh clone → `npm install && npm test` green with no API key (verified on a clean checkout: 100 tests + `eval` green, no key)
+- [x] Fresh clone → `npm install && npm test` green with no API key (verified on a clean checkout: 104 tests + `eval` green, no key)
 - [x] CI badge green on `main` (badge in README; `ci` runs typecheck + test + the `eval` baseline gate, all offline)
 - [x] Committed cassettes + baseline so the reviewer can run everything without secrets
 
@@ -24,6 +24,8 @@ Their brief → what maps to it → status. Nothing ships until every [ ] under 
 ### 4. "Anything that helps them understand the work"
 - [x] `SPEC.md` / `DESIGN.md` / `GUARDRAILS.md` — the thinking, with trade-offs + a designed-vs-built reconciliation
 - [x] The deliberate-regression demonstration (red CI run linked in README) — the harness catching a bug is the money shot
+- [x] README "Known limitations / what I'd do next" — each scope cut stated plainly (replay assumes deterministic tools; injection detected-not-proven; faithfulness structural-not-semantic; layered guardrail coverage; order-strict asserts)
+- [x] Review-driven hardening pass, documented (NOTES "Post-submission"): a skeptical code review of the flagship claims, then fixes so each claim matches what the code proves — dropped the faithfulness message-regex (negation bug), added two isolating scenarios, built a fault-injection mode that proves the `double_refund` guardrail e2e
 - [ ] Optional: demo recording (stretch — cut; the hosted report + red-CI run cover the "see it work" need)
 
 ## Framing checks (the meta-move, verified)
@@ -32,6 +34,7 @@ Their brief → what maps to it → status. Nothing ships until every [ ] under 
 - [x] "No correct solution / clarity of thought" is answered by visible decisions + trade-offs + non-goals, not by volume
 - [x] Payments-flavoured agent signals domain empathy without claiming domain integration
 - [x] Every capability claimed in README is demonstrable by a command a reviewer can run (`npm test`, `npm run eval`, `npm run demo`, `npm run canary`)
+- [x] Claims are scoped to what the code proves, not what it gestures at — the review-hardening pass exists precisely to keep the two in sync (7 golden scenarios; guardrail denials proven e2e incl. fault-injected `double_refund`)
 
 ## Pre-submit final pass
 
