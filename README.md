@@ -15,7 +15,7 @@ The take-home brief says *"build something using AI."* The role is about making 
 The agent here (a payments-support agent with three tools) is intentionally small. It exists to give the harness something real to bite on. The harness is the point:
 
 1. **Deterministic record/replay** — every LLM interaction is captured as a cassette and replayed byte-for-byte in tests. The agent is unit-testable in CI with **zero API calls, zero flakes, zero cost**.
-2. **Eval suite** — golden scenarios that assert on the *trajectory* (right tool, right order, guardrail outcomes) as well as the final action, plus deterministic **faithfulness checks** (the customer message must match what actually happened) — no LLM judge, so the whole suite is exactly reproducible. (Why the judge was dropped: DESIGN Decision 5.)
+2. **Eval suite** — golden scenarios that assert on the *trajectory* (right tool, right order, guardrail outcomes) as well as the final action, plus deterministic **faithfulness checks** (the resolved action and references must match what actually happened in the trace) — no LLM judge, so the whole suite is exactly reproducible. (Why the judge was dropped: DESIGN Decision 5.)
 3. **Guardrails** — schema validation on every tool call and final output, plus a policy layer that blocks unsafe actions (over-limit refunds, double refunds) *before* they execute.
 4. **Observability** — a structured trace per run: every model call, tool call, guardrail decision, token count, cost, and latency — rendered into a human-readable report.
 5. **Regression detection** — eval results diff against a committed baseline; drift fails the build.
@@ -60,6 +60,16 @@ npm run canary    # drift canary: re-run scenarios against the live model (needs
 | `src/harness/` | The harness: `model-client` seam, `cassette` record/replay, `eval` runner, `trace`, `report` |
 | `cassettes/` | Committed recordings — the test fixtures |
 | `evals/` | Golden scenarios + committed baseline |
+
+## Known limitations / what I'd do next
+
+Stated plainly, because a harness that oversells its guarantees is worse than one whose edges are known. Each is a deliberate scope cut for a take-home, with the extension noted.
+
+- **Replay assumes deterministic tools.** Record/replay freezes the *model* side (a fingerprint over model + system + messages + tools); on replay the tools still **execute live** against the in-memory fixture DB, which is pure and deterministic. Point a tool at a real PSP — network, clocks, non-reproducible refund ids — and replay would diverge. The seam is already in place (injected `Clock` + `IdGenerator`); the next step is to record tool *outputs* alongside model turns and replay those too, making the whole trajectory hermetic.
+- **Injection resistance is detected, not proven.** The two injection scenarios each freeze one recorded run where the agent ignored the injection. That lets the canary catch a *regression* in that behaviour; it does not prove the agent is robust to injection in general (that's model-dependent and adversarial). Real coverage would be a fuzzed corpus of injection phrasings scored for attack-success-rate, not a single golden.
+- **Faithfulness is structural, not semantic.** The check asserts the *structured* resolution (action + references) matches the trace; it deliberately does not judge the free-text message's prose. A message that lies in words while the action is correct is out of scope — that residue is what an LLM judge would have scored, dropped on purpose (DESIGN Decision 5).
+- **Guardrail e2e coverage is layered, and honest about it.** The ceiling guardrail fires end-to-end in `over-limit-refund`. The `double_refund` guardrail is a *latent backstop*: `double-refund` shows the model declining before it ever calls the tool, so layer 2 isn't reached — the guardrail's own denial path is covered by unit tests. That's the defense-in-depth design working, but it means no golden exercises the second guardrail's denial e2e. A fault-injection mode (force the model to attempt the unsafe tool call) would close that.
+- **Trajectory assertions are order-strict.** Expectations pin the exact tool sequence, which can over-fit — a valid re-ordering reads as a failure. That's intentional for offline goldens (tight is the point) but is why drift-sensitivity lives in the sampling `canary`, not the strict suite.
 
 ## How I used AI to build this
 
